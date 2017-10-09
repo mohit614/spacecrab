@@ -1,5 +1,18 @@
 # PROJECT SPACECRAB #
 
+~~~
+  __                __
+ / /_   ___   ___  _\ \
+ \  /  (_*_) (_*_) \  /                          PROJECT
+  { }    |     |   { }    _____ ____  ___   ______________________  ___    ____
+   \\/''''''''''''\//    / ___// __ \/   | / ____/ ____/ ____/ __ \/   |  / __ )
+   (  . + *   ˚  .  )    \__ \/ /_/ / /| |/ /   / __/ / /   / /_/ / /| | / __ \
+    \  +   +  * ˚  /    ___/ / ____/ ___ / /___/ /___/ /___/ _, _/ ___ |/ /_/ /
+     \  ˚   *  ˚  /    /____/_/   /_/  |_\____/_____/\____/_/ |_/_/  |_/_____/
+     //'//''''\\'\\
+     V  V      V  V
+~~~
+
 Bootstraps an AWS account with everything you need to generate, mangage, and distribute and alert on AWS honey tokens. Made with breakfast roti by the Atlassian security team.
 
 No added cyber.
