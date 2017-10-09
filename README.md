@@ -40,7 +40,11 @@ Configure your aws cli with root or admin access and run `python manager.py` to 
 3. Configure a domain for AWS's Simple Email Service. There's a lot of documentation about that, start https://aws.amazon.com/ses/ for details. You can also just configure one email address, which might be easier.
 4. If you have a tagging policy for your AWS infrastructure, edit tags.json to make sure they meet your requirements.
 5. Ensure you have valid AWS credentials for the account you've created.
-6. run `python manager.py` and answer the questions.
+6. Run `python manager.py` and answer the questions.
+7. Wait about half an hour.
+8. Check in the AWS console to see if the cloudformation stacks have built.
+9. If something has gone wrong just delete "SpaceCrabStack" and start again, tbh.
+10. No, we don't know why it doesn't work sometimes. It should work all the time. It is a mystery.
 
 
 ### Parameters ###
