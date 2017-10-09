@@ -1,0 +1,117 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "OwnerArn": {
+      "Type": "String",
+      "Description": "The arn of the owner for buckets etc"
+    }
+  },
+  "Resources": {
+    "FunctionCodeBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "DependsOn": [
+        "FunctionCodeBucket"
+      ],
+      "Properties": {
+        "Bucket": {
+          "Ref": "FunctionCodeBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "*",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "FunctionCodeBucket"
+                    }
+                  ]
+                ]
+              },
+              "Principal": {
+                "AWS": [
+                  {
+                    "Ref": "OwnerArn"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "TemplateCodeBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "DependsOn": [
+        "TemplateCodeBucket"
+      ],
+      "Properties": {
+        "Bucket": {
+          "Ref": "TemplateCodeBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "*",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "TemplateCodeBucket"
+                    }
+                  ]
+                ]
+              },
+              "Principal": {
+                "AWS": [
+                  {
+                    "Ref": "OwnerArn"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "FunctionCodeBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "BucketOwnerFullControl"
+      }
+    },
+    "TemplateCodeBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "BucketOwnerFullControl"
+      }
+    }
+  },
+  "Outputs": {
+    "SpaceCrabFunctionCodeBucket": {
+      "Description": "The name of the s3 bucket to upload code to",
+      "Value": {
+        "Ref": "FunctionCodeBucket"
+      },
+      "Export": {
+        "Name": "SpaceCrabFunctionCodeBucket"
+      }
+    },
+    "SpaceCrabTemplateCodeBucket": {
+      "Description": "The name of the s3 bucket to upload cloudformation templates to",
+      "Value": {
+        "Ref": "TemplateCodeBucket"
+      },
+      "Export": {
+        "Name": "SpaceCrabTemplateCodeBucket"
+      }
+    }
+  }
+}
