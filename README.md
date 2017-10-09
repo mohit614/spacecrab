@@ -1,4 +1,4 @@
-# AWS honey token manager #
+# PROJECT SPACECRAB #
 
 Bootstraps an AWS account with everything you need to generate, mangage, and distribute and alert on AWS honey tokens. Made with breakfast roti by the Atlassian security team.
 
@@ -22,10 +22,9 @@ Configure your aws cli with root or admin access and run `python manager.py` to 
 2. Run `python manager.py` and answer the questions.
 
 ### Slower Start ###
-1. Generate a https://v2.developer.pagerduty.com/v2/docs/events-api-v2 integration key. Set up the integration to alert to the relevant groups, etc.
-2. Build an empty AWS account, that you will only use for this alerting. You're going to distribute these keys all over the place, and they're relatively safe but keep it away from your prod infrastructure.
-2. Configure a domain for AWS's Simple Email Service. There's a lot of documentation about that, start https://aws.amazon.com/ses/ for details. You can also just configure one email address, which might be easier.
-3. PENDING Configure a JIRA project for these alerts and get an API key
+1. Build an empty AWS account, that you will only use for this alerting. You're going to distribute these keys all over the place, and they're relatively safe but keep it away from your prod infrastructure.
+2. Generate a https://v2.developer.pagerduty.com/v2/docs/events-api-v2 integration key. Set up the integration to alert to the relevant groups, etc.
+3. Configure a domain for AWS's Simple Email Service. There's a lot of documentation about that, start https://aws.amazon.com/ses/ for details. You can also just configure one email address, which might be easier.
 4. If you have a tagging policy for your AWS infrastructure, edit tags.json to make sure they meet your requirements.
 5. Ensure you have valid AWS credentials for the account you've created.
 6. run `python manager.py` and answer the questions.
