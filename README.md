@@ -28,6 +28,10 @@ Configure your aws cli with root or admin access and run `python manager.py` to 
 * @dagrz
 * @danbourke
 
+## Version ##
+
+0.1.0
+
 ## Overview ##
 
 ### Quickstart ###
