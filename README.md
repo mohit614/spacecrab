@@ -73,6 +73,7 @@ The following parameters are passed to the master CloudFormation stack `./CloudF
 
 ### Requirements ###
 
+* python2.7
 * awscli
 * boto3
 
