@@ -23,6 +23,10 @@ It's trivial to create one access key and use it as a honey token but it quickly
 
 Configure your aws cli with root or admin access and run `python manager.py` to get started.
 
+## More Words ##
+
+You can read our blog post about this here: https://developer.atlassian.com/blog/2017/10/project-spacecrab-breach-detection/
+
 ## Authors ##
 
 * @dagrz
