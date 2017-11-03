@@ -72,25 +72,25 @@ if kms_arn:
     name = get_value('Please enter a name for your value: ', 'Is "%s" correct? ', 'y')
     description = get_value('Please enter a description for the value: ', 'is "%s" correct? ', 'y')
 
-secret = {"Type": "String",
-        "Description": description,
-        "Default": safe_sekrit,
-        "NoEcho": "true"
-        }
+    secret = {"Type": "String",
+            "Description": description,
+            "Default": safe_sekrit,
+            "NoEcho": "true"
+            }
 
 
-print('ok, destroying stack')
-script_path = os.path.realpath(__file__)
-print(script_path)
-template_path = os.path.relpath('CloudFormationTemplates', script_path)
-print(template_path)
-bootstrap_path = os.path.join(template_path, 'bootstrap.template')
-print(bootstrap_path)
-with open(bootstrap_path, 'r+') as f:
-    template = json.load(f, object_pairs_hook=OrderedDict)
-    template['Parameters'][name] = secret
-    f.seek(0)
-    json.dump(template, f, indent=2)
-    f.truncate()
+    print('ok, destroying stack')
+    script_path = os.path.realpath(__file__)
+    print(script_path)
+    template_path = os.path.relpath('CloudFormationTemplates', script_path)
+    print(template_path)
+    bootstrap_path = os.path.join(template_path, 'bootstrap.template')
+    print(bootstrap_path)
+    with open(bootstrap_path, 'r+') as f:
+        template = json.load(f, object_pairs_hook=OrderedDict)
+        template['Parameters'][name] = secret
+        f.seek(0)
+        json.dump(template, f, indent=2)
+        f.truncate()
 
-print('ok check it')
+    print('ok check it')
