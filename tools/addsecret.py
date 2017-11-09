@@ -39,8 +39,9 @@ def yesno(prompt, default=None):
 
 def get_value(prompt, confirm_prompt, default=None):
     print('\n')
+    # this sucks if your string has whitespace at the start or end. But uh. Don't do that. I don't know.
     x = raw_input(prompt).strip()
-    if r'%s' in confirm_prompt:
+    if r'%s' in confirm_prompt:  # really m8
         confirm_prompt = confirm_prompt % x
     a = yesno(confirm_prompt, default)
     if a:
@@ -65,7 +66,6 @@ if exports:
             crabstack = export['ExportingStackId']
             break
 if kms_arn:
-    # this sucks if you string has whitespace at the start or end. But uh. Don't do that. I don't know.
     sekrit = get_value('Please enter the string you would like to encrypt: ','Is "%s" your string (now in quotes)? ', 'y')
     codes = kms.encrypt(KeyId=kms_arn, Plaintext=sekrit)
     safe_sekrit = base64.b64encode(codes['CiphertextBlob'])
@@ -79,13 +79,10 @@ if kms_arn:
             }
 
 
-    print('ok, destroying stack')
+    print('ok, updating template file')
     script_path = os.path.realpath(__file__)
-    print(script_path)
     template_path = os.path.relpath('CloudFormationTemplates', script_path)
-    print(template_path)
     bootstrap_path = os.path.join(template_path, 'bootstrap.template')
-    print(bootstrap_path)
     with open(bootstrap_path, 'r+') as f:
         template = json.load(f, object_pairs_hook=OrderedDict)
         template['Parameters'][name] = secret
@@ -93,4 +90,4 @@ if kms_arn:
         json.dump(template, f, indent=2)
         f.truncate()
 
-    print('ok check it')
+    print('template file updated, glhf')
