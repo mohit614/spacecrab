@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     except Exception as e:
         print(e)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     try:
@@ -53,7 +53,7 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(e)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
     records = []
 

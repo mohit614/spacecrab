@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     except Exception as e:
         print(e.message)
         return_value['Status'] = 'FAILED'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     try:
@@ -47,7 +47,7 @@ def lambda_handler(event, context):
     except Exception as e:
         print(e.message)
         return_value['Status'] = 'FAILED'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     if cur:
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
     con.close()
 
     return_value['Status'] = 'SUCCESS'
-    return_value['Message'] = 'Successfully expired %d token(s)' % expired_count
+    return_value['Reason'] = 'Successfully expired %d token(s)' % expired_count
     print(return_value)
 
 

@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         cur = con.cursor()
     except Exception as e:
         print(e.message)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     # Try and generate a custom username
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
         user = response['User']['UserName']
     except ClientError as e:
         print(e.message)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     # check for token counts, if too many, bail:
@@ -71,7 +71,7 @@ def lambda_handler(event, context):
         if len(response['AccessKeyMetadata']) >= 2:
             # too many keys
             print("Unable to create more keys for user %s" % user)
-            return_value['Message'] = "Unable to create more keys for user %s" % user
+            return_value['Reason'] = "Unable to create more keys for user %s" % user
             return return_value
     except ClientError as e:
         pass
@@ -83,7 +83,7 @@ def lambda_handler(event, context):
         )
     except ClientError as e:
         print(e.message)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     try:
@@ -96,7 +96,7 @@ def lambda_handler(event, context):
         return_value['AccessKey'] = response['AccessKey']
     except ClientError as e:
         print(e.message)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     # Insert new token entry into the TokenDatabase
@@ -141,7 +141,7 @@ def lambda_handler(event, context):
             message += 'Unable to delete user %s\n' % user
 
         message = e.message + message
-        return_value['Message'] = message
+        return_value['Reason'] = message
         return return_value
 
     return_value['Status'] = 'SUCCESS'

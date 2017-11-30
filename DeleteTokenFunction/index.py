@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     client = boto3.client('iam')
     AccessKeyId = event.get('AccessKeyId', None)
     if not AccessKeyId:
-        return_value['Status'] = 'Failed'
+        return_value['Status'] = 'FAILED'
         return_value['Reason'] = 'No AccessKeyId provided'
         return return_value
     encrypted_db_password = os.environ.get('ENCRYPTED_DATABASE_PASSWORD', None)
@@ -33,7 +33,7 @@ def lambda_handler(event, context):
         cur = con.cursor()
     except Exception as e:
         print(e.message)
-        return_value['Status'] = 'Failure'
+        return_value['Status'] = 'FAILED'
         return_value['Reason'] = e.message
         return return_value
     # need to retrieve username from database to delete key, for some reason

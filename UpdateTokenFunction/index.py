@@ -17,10 +17,10 @@ def lambda_handler(event, context):
     '''
     return_value = {}
     return_value['Status'] = 'Failure'
-    return_value['Message'] = ''
+    return_value['Reason'] = ''
     AccessKeyId = event.get('AccessKeyId', None)
     if AccessKeyId is None:
-        return_value['Message'] = 'No AccessKeyId found in event.'
+        return_value['Reason'] = 'No AccessKeyId found in event.'
         print(return_value)
         return return_value
     encrypted_db_password = os.environ.get('ENCRYPTED_DATABASE_PASSWORD', None)
@@ -43,7 +43,7 @@ def lambda_handler(event, context):
     except Exception as e:
         print(e.message)
         return_value['Status'] = 'Failure'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         print(return_value)
         return return_value
     try:
@@ -65,12 +65,12 @@ def lambda_handler(event, context):
             ExpiresAt = first_result[3]
             Notes = first_result[4]
         else:
-            return_value['Message'] = 'Unable to locate access key %s in database' % AccessKeyId
+            return_value['Reason'] = 'Unable to locate access key %s in database' % AccessKeyId
             print(return_value)
             return return_value
     except Exception as e:
         print(e)
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         print(return_value)
         return return_value
 
@@ -84,7 +84,7 @@ def lambda_handler(event, context):
             ExpiresAt = parse(ExpiresAt)
         except ValueError as e:
             print(e)
-            return_value['Message'] = 'Unable to parse %s into valid datetime' % old_expiresat
+            return_value['Reason'] = 'Unable to parse %s into valid datetime' % old_expiresat
             print(return_value)
             return return_value
     # time to update the database boyee
@@ -106,10 +106,10 @@ def lambda_handler(event, context):
         con.commit()
         cur.close()
     except Exception as e:
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         print(return_value)
         return return_value
     return_value['Status'] = 'Success'
-    return_value['Message'] = 'Updated token %s with new values' % AccessKeyId
+    return_value['Reason'] = 'Updated token %s with new values' % AccessKeyId
     print(return_value)
     return return_value
