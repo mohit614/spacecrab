@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         cur = con.cursor()
     except Exception as e:
         return_value['Status'] = 'FAILED'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     # Setup the SQL query to export to CSV
@@ -50,7 +50,7 @@ def lambda_handler(event, context):
             cur.copy_expert(query, f)
     except Exception as e:
         return_value['Status'] = 'FAILED'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     # Upload the zip file to S3
@@ -66,7 +66,7 @@ def lambda_handler(event, context):
             )
     except ClientError as e:
         return_value['Status'] = 'FAILED'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
     # Delete local files
@@ -83,5 +83,5 @@ def lambda_handler(event, context):
         pass
 
     return_value['Status'] = 'SUCCESS'
-    return_value['Message'] = 'Token database backed up successfully'
+    return_value['Reason'] = 'Token database backed up successfully'
     return return_value

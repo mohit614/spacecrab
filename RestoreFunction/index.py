@@ -33,7 +33,7 @@ def lambda_handler(event, context):
         cur = con.cursor()
     except Exception as e:
         return_value['Status'] = 'FAILED'
-        return_value['Message'] = e.message
+        return_value['Reason'] = e.message
         return return_value
 
  
@@ -46,5 +46,5 @@ def lambda_handler(event, context):
         pass
 
     return_value['Status'] = 'SUCCESS'
-    return_value['Message'] = 'Token database restored successfully'
+    return_value['Reason'] = 'Token database restored successfully'
     return return_value
