@@ -12,7 +12,7 @@ import boto3
 import botocore.exceptions
 
 
-spacecrab = r"""
+SPACECRAB = r"""
   __                __
  / /_   ___   ___  _\ \
  \  /  (_*_) (_*_) \  /                          PROJECT
@@ -459,7 +459,7 @@ def delete_bucket(s3, bucket):
 
 def new_stack(cfn):
     print("\n\nWelcome to Project SPACECRAB setup.\n" +
-          "We'll begin constructing spacecrab infrastructure shortly,\n" +
+          "We'll begin constructing SPACECRAB infrastructure shortly,\n" +
           "but first we'll need to collect some data.\n"
           )
     arn = get_permission_stuff()
@@ -571,7 +571,7 @@ def update_stack(cfn):
 
 def main(argv):
 
-    print(spacecrab)
+    print(SPACECRAB)
     cfn = boto3.client('cloudformation')
     try:
         r = cfn.describe_stacks(StackName='SpaceCrabStack')
