@@ -529,10 +529,13 @@ def update_stack(cfn):
     parameters = {}
     parameters['FunctionCodeBucket'] = function_bucket
     parameters['TemplateCodeBucket'] = template_bucket
-    parameters['PagerdutyApiToken'] = pagerdutytoken
-    parameters['AlertEmailAddress'] = alertemail
-    parameters['AlertFromAddress'] = from_email
-    parameters['SESRegion'] = region
+    if pagerdutytoken is not None:
+        parameters['PagerdutyApiToken'] = pagerdutytoken
+    if alertemail is not None:
+        parameters['AlertEmailAddress'] = alertemail
+        parameters['AlertFromAddress'] = from_email
+        parameters['SESRegion'] = region
+
     parameters = convert_parameters(parameters)
     with open('tags.json', 'r') as f:
         tags = json.load(f)

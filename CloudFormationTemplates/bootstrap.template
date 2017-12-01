@@ -18,7 +18,6 @@
     "MasterDatabasePassword": {
       "Type": "String",
       "Description": "The master password for token database",
-      "Default": "honeycomb",
       "NoEcho": "true"
     },
     "FunctionDatabaseUser": {
@@ -30,13 +29,11 @@
     "FunctionDatabasePassword": {
       "Type": "String",
       "Description": "The password lambda functions will use to talk to the token database",
-      "Default": "whinniethepooh",
       "NoEcho": "true"
     },
     "IamTokenUserPath": {
       "Type": "String",
-      "Description": "The path to use for token IAM users",
-      "Default": "/SpaceCrab/"
+      "Description": "The path to use for token IAM users"
     },
     "IamPath": {
       "Type": "String",
@@ -46,30 +43,25 @@
     "PagerdutyApiToken": {
       "Type": "String",
       "Description": "Pagerduty API Token",
-      "Default": "DONTUSE",
       "NoEcho": "true"
     },
     "AlertEmailAddress": {
       "Type": "String",
       "Description": "Address to send alert emails to",
-      "Default": "DONTUSE",
       "NoEcho": "true"
     },
     "AlertFromAddress": {
       "Type": "String",
       "Description": "Address to send alert emails from",
-      "Default": "DONTUSE",
       "NoEcho": "true"
     },
     "SESRegion": {
       "Type": "String",
       "Description": "Region to use for SES API calls.",
-      "Default": "us-west-2"
     },
     "OwnerArn": {
       "Type": "String",
-      "Description": "Arn to use as owner of KMS/Buckets",
-      "Default": ""
+      "Description": "Arn to use as owner of KMS/Buckets"
     }
   },
   "Resources": {
