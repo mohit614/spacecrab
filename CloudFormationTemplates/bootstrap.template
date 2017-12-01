@@ -57,7 +57,7 @@
     },
     "SESRegion": {
       "Type": "String",
-      "Description": "Region to use for SES API calls.",
+      "Description": "Region to use for SES API calls."
     },
     "OwnerArn": {
       "Type": "String",
