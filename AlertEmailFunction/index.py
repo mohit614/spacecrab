@@ -39,7 +39,7 @@ def lambda_handler(event, context):
     encrypted_email = os.environ.get('ENCRYPTED_EMAIL', None)
     if None in [encrypted_email]:
         return_value['Reason'] = 'Missing email address'
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     encrypted_email = base64.b64decode(encrypted_email)
     encrypted_from_email = os.environ.get('ENCRYPTED_FROM_EMAIL', None)
@@ -53,9 +53,8 @@ def lambda_handler(event, context):
         response = kmsclient.decrypt(CiphertextBlob=encrypted_email)
         email = response['Plaintext']
     except ClientError as e:
-        print(e)
         return_value['Reason'] = e.message
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
 
     try:
@@ -63,9 +62,8 @@ def lambda_handler(event, context):
         response = kmsclient.decrypt(CiphertextBlob=encrypted_from_email)
         from_email = response['Plaintext']
     except ClientError as e:
-        print(e)
         return_value['Reason'] = e.message
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     return_value['Status'] = 'SUCCESS'
     return_value['Reason'] = 'Found an email address'
@@ -117,5 +115,5 @@ def lambda_handler(event, context):
 
     )
     print(response)
-
+    print(json.dumps(return_value))
     return return_value

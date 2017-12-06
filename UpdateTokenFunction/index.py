@@ -2,6 +2,7 @@ import os
 import psycopg2
 import base64
 import boto3
+import json
 from dateutil.parser import parse
 
 
@@ -21,7 +22,7 @@ def lambda_handler(event, context):
     AccessKeyId = event.get('AccessKeyId', None)
     if AccessKeyId is None:
         return_value['Reason'] = 'No AccessKeyId found in event.'
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     encrypted_db_password = os.environ.get('ENCRYPTED_DATABASE_PASSWORD', None)
     encrypted_db_password = base64.b64decode(encrypted_db_password)
@@ -41,10 +42,9 @@ def lambda_handler(event, context):
                                password=db_password)
         cur = con.cursor()
     except Exception as e:
-        print(e.message)
         return_value['Status'] = 'Failure'
         return_value['Reason'] = e.message
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     try:
         cur.execute('''
@@ -66,12 +66,11 @@ def lambda_handler(event, context):
             Notes = first_result[4]
         else:
             return_value['Reason'] = 'Unable to locate access key %s in database' % AccessKeyId
-            print(return_value)
+            print(json.dumps(return_value))
             return return_value
     except Exception as e:
-        print(e)
         return_value['Reason'] = e.message
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
 
     Owner = event.get('Owner', Owner)
@@ -83,9 +82,8 @@ def lambda_handler(event, context):
         try:
             ExpiresAt = parse(ExpiresAt)
         except ValueError as e:
-            print(e)
             return_value['Reason'] = 'Unable to parse %s into valid datetime' % old_expiresat
-            print(return_value)
+            print(json.dumps(return_value))
             return return_value
     # time to update the database boyee
     try:
@@ -105,11 +103,16 @@ def lambda_handler(event, context):
                     )
         con.commit()
         cur.close()
+        updated_token = {
+            "AccessKeyId": AccessKeyId, "Owner": Owner, "Location": Location,
+            "ExpiresAt": ExpiresAt, "Notes": Notes
+            }
+        print(json.dumps(updated_token))
     except Exception as e:
         return_value['Reason'] = e.message
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     return_value['Status'] = 'Success'
     return_value['Reason'] = 'Updated token %s with new values' % AccessKeyId
-    print(return_value)
+    print(json.dumps(return_value))
     return return_value

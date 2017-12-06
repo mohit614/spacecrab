@@ -17,7 +17,6 @@ def decrypt_value(value):
         clear = kms_response['Plaintext']
         return_value['Value'] = clear
         return_value['Status'] = 'SUCCESS'
-        print('decrypt success')
     except ClientError as e:
         return_value['Reason'] = e.message
 
@@ -34,14 +33,10 @@ def subscribe_lambda(lam, sns):
                 Protocol='lambda',
                 Endpoint=lam
             )
-        print(snsrep)
     except ClientError as e:
-        print(e)
         return_value['Reason'] = e.message
     try:
-        print("adding policy")
         function_name = lam.split(':')[-1]  # sick
-        print(function_name)
         rep = lambdac.add_permission(
             Action='lambda:InvokeFunction',
             FunctionName=function_name,
@@ -49,13 +44,12 @@ def subscribe_lambda(lam, sns):
             SourceArn=sns,
             StatementId=os.urandom(8).encode('hex')
             )
-        print(rep)
     except ClientError as e:
-        print(e)
         return_value['Reason'] = e.message
 
     return_value['Status'] = 'SUCCESS'
     return_value['Reason'] = snsrep['SubscriptionArn']
+    print(json.dumps(return_value))
     return return_value
 
 
@@ -101,6 +95,7 @@ def lambda_handler(event, context):
     # Temporary set to success while we build out the lambda
     # So that the stack doesnt break
     return_value['Status'] = 'SUCCESS'
+    print(json.dumps(return_value))
     return send_response(event, return_value)
 
 
@@ -113,7 +108,6 @@ def do_things():
     topic_arn = os.environ.get('SNS_TOPIC_ARN', None)
     encrypted_pg_token = os.environ.get('ENCRYPTED_PAGERDUTY_TOKEN', None)
     if None in [topic_arn, encrypted_pg_token]:
-        print(topic_arn, encrypted_pg_token)
         pass  # skip this
     else:
         decrypt = decrypt_value(encrypted_pg_token)
@@ -121,7 +115,6 @@ def do_things():
             pg_token = decrypt['Value']
         else:
             pg_token = 'DONTUSE'
-            print('DONTUSE pg token')
     encrypted_email = os.environ.get("ENCRYPTED_EMAIL", None)
     if encrypted_email is not None:
         decrypt = decrypt_value(encrypted_email)
@@ -129,7 +122,6 @@ def do_things():
             email = decrypt['Value']
         else:
             email = 'DONTUSE'
-            print('DONTUSE email')
 
     pagerduty_lambda = os.environ.get('PAGERDUTY_LAMBDA', 'DONTUSE')
     email_lambda = os.environ.get('EMAIL_LAMBDA', 'DONTUSE')
@@ -141,7 +133,7 @@ def do_things():
     if (pg_token == "DONTUSE") & (email == "DONTUSE"):
         return_value['Status'] = 'SUCCESS'
         return_value['Reason'] = 'No alerts to set up tbh'
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
 
     if pg_token != "DONTUSE":
@@ -156,12 +148,12 @@ def do_things():
         return_value['Status'] = response.get('Status', 'FAILED')
         return_value['Reason'] = response.get('Reason', 'Who knows?')
 
-    print(return_value)
+    print(json.dumps(return_value))
     return return_value
 
 
 def send_response(request, return_value):
-    print(return_value)
+    print(json.dumps(return_value))
     if 'ResponseURL' in request and request['ResponseURL']:
         url = urlparse.urlparse(request['ResponseURL'])
         body = json.dumps(return_value)

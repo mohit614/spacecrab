@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     encrypted_pg_token = os.environ.get('ENCRYPTED_PAGERDUTY_TOKEN', None)
     if None in [encrypted_pg_token]:
         return_value['Reason'] = 'Missing pagerduty token'
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     encrypted_pg_token = base64.b64decode(encrypted_pg_token)
 
@@ -21,14 +21,13 @@ def lambda_handler(event, context):
         response = kmsclient.decrypt(CiphertextBlob=encrypted_pg_token)
         pg_token = response['Plaintext']
     except ClientError as e:
-        print(e)
         return_value['Reason'] = e.message
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
 
     if pg_token == "DONTUSE":
         return_value['Reason'] = 'No valid pagerduty token provided'
-        print(return_value)
+        print(json.dumps(return_value))
         return return_value
     # ok, we've got a, hopefully valid, pagerduty token.
     # let's break some stuff!
@@ -62,4 +61,6 @@ def lambda_handler(event, context):
     r = requests.post(endpoint, json=data)
     if r.status_code == 200:
         return_value['Status'] = 'SUCCESS'
+    return_value['Reason'] = r.text
+    print(json.dumps(return_value))
     return return_value
