@@ -536,6 +536,28 @@
           ]
         }
       }
+    },
+    "ApiGatewayStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "DependsOn": [
+        "ManagementStack",
+        "NetworkingStack",
+        "AlertingStack"
+      ],
+      "Properties": {
+        "TemplateURL": {
+          "Fn::Join": [
+            "",
+            [
+              "https://s3.amazonaws.com/",
+              {
+                "Ref": "TemplateCodeBucket"
+              },
+              "/apigateway.template"
+            ]
+          ]
+        }
+      }
     }
   },
   "Outputs": {
@@ -645,6 +667,18 @@
       },
       "Export": {
         "Name": "TokenGroup"
+      }
+    },
+    "ApiGatewayRootUrl": {
+      "Description": "The root URL for the Spacecrab REST API.",
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiGatewayStack",
+          "Outputs.RootUrl"
+        ]
+      },
+      "Export": {
+        "Name": "ApiGatewayRootUrl"
       }
     }
   }
