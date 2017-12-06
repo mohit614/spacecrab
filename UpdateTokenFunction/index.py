@@ -103,6 +103,11 @@ def lambda_handler(event, context):
                     )
         con.commit()
         cur.close()
+        updated_token = {
+            "AccessKeyId": AccessKeyId, "Owner": Owner, "Location": Location,
+            "ExpiresAt": ExpiresAt, "Notes": Notes
+            }
+        print(json.dumps(updated_token))
     except Exception as e:
         return_value['Reason'] = e.message
         print(json.dumps(return_value))
