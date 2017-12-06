@@ -33,7 +33,7 @@
     },
     "IamTokenUserPath": {
       "Type": "String",
-      "Description": "The path to use for token IAM users",
+      "Description": "The path to use for token IAM users"
     },
     "IamPath": {
       "Type": "String",
@@ -57,12 +57,11 @@
     },
     "SESRegion": {
       "Type": "String",
-      "Description": "Region to use for SES API calls.",
-      "Default": "us-west-2"
+      "Description": "Region to use for SES API calls."
     },
     "OwnerArn": {
       "Type": "String",
-      "Description": "Arn to use as owner of KMS/Buckets",
+      "Description": "Arn to use as owner of KMS/Buckets"
     }
   },
   "Resources": {
