@@ -37,8 +37,8 @@ def lambda_handler(event, context):
                                password=db_password)
         cur = con.cursor()
     except Exception as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     # Try and generate a custom username
@@ -61,8 +61,8 @@ def lambda_handler(event, context):
         UserArn = response['User']['Arn']
         user = response['User']['UserName']
     except ClientError as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     # check for token counts, if too many, bail:
@@ -70,8 +70,8 @@ def lambda_handler(event, context):
         response = client.list_access_keys(UserName=user)
         if len(response['AccessKeyMetadata']) >= 2:
             # too many keys
-            print("Unable to create more keys for user %s" % user)
             return_value['Reason'] = "Unable to create more keys for user %s" % user
+            print(json.dumps(return_value))
             return return_value
     except ClientError as e:
         pass
@@ -82,8 +82,8 @@ def lambda_handler(event, context):
             UserName=user
         )
     except ClientError as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     try:
@@ -95,8 +95,8 @@ def lambda_handler(event, context):
         response['AccessKey']['CreateDate'] = response['AccessKey']['CreateDate'].isoformat()
         return_value['AccessKey'] = response['AccessKey']
     except ClientError as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     # Insert new token entry into the TokenDatabase
@@ -127,22 +127,21 @@ def lambda_handler(event, context):
         con.commit()
         con.close()
     except Exception as e:
-        print(e.message)
         message = '\n'
         try:
             client.delete_access_key(AccessKeyId=AccessKeyId)
         except ClientError as e:
-            print('Unable to delete access key %s' % AccessKeyId)
             message += 'Unable to delete access key %s\n' % AccessKeyId
         try:
             client.delete_user(UserName=user)
         except ClientError as e:
-            print('Unable to delete user %s\n' % user)
             message += 'Unable to delete user %s\n' % user
 
         message = e.message + message
         return_value['Reason'] = message
+        print(json.dumps(return_value))
         return return_value
 
     return_value['Status'] = 'SUCCESS'
+    print(json.dumps(return_value))
     return return_value

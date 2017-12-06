@@ -6,6 +6,7 @@ from botocore.client import Config
 import psycopg2
 import time
 import gzip
+import json
 
 
 def lambda_handler(event, context):
@@ -34,6 +35,7 @@ def lambda_handler(event, context):
     except Exception as e:
         return_value['Status'] = 'FAILED'
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
  
@@ -47,4 +49,5 @@ def lambda_handler(event, context):
 
     return_value['Status'] = 'SUCCESS'
     return_value['Reason'] = 'Token database restored successfully'
+    print(json.dumps(return_value))
     return return_value
