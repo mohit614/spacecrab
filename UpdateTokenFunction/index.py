@@ -19,6 +19,7 @@ def lambda_handler(event, context):
     return_value = {}
     return_value['Status'] = 'Failure'
     return_value['Reason'] = ''
+    return_value['Function'] = 'UpdateTokenFunction'
     AccessKeyId = event.get('AccessKeyId', None)
     if AccessKeyId is None:
         return_value['Reason'] = 'No AccessKeyId found in event.'
@@ -114,5 +115,6 @@ def lambda_handler(event, context):
         return return_value
     return_value['Status'] = 'Success'
     return_value['Reason'] = 'Updated token %s with new values' % AccessKeyId
+    return_value['Notes'] = updated_token
     print(json.dumps(return_value))
     return return_value

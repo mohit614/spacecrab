@@ -20,6 +20,7 @@ def lambda_handler(event, context):
     Notes = event.get('Notes', None)
     return_value = {}
     return_value['Status'] = 'FAILED'
+    return_value['Function'] = 'AddTokenFunction'
     encrypted_db_password = os.environ.get('ENCRYPTED_DATABASE_PASSWORD', None)
     encrypted_db_password = base64.b64decode(encrypted_db_password)
     try:
@@ -126,11 +127,6 @@ def lambda_handler(event, context):
         ))
         con.commit()
         con.close()
-        created_token = {
-            "AccessKeyId": AccessKeyId, "user": user, "Owner": Owner,
-            "Location": Location, "ExpiresAt": ExpiresAt, "Notes": Notes
-            }
-        print(json.dumps(created_token))
     except Exception as e:
         message = '\n'
         try:
@@ -144,9 +140,15 @@ def lambda_handler(event, context):
 
         message = e.message + message
         return_value['Reason'] = message
-        print(json.dumps(return_value))
         return return_value
-
+    created_token = {
+        "AccessKeyId": AccessKeyId, "user": user, "Owner": Owner,
+        "Location": Location, "ExpiresAt": ExpiresAt, "Notes": Notes
+    }
+    return_value['Notes'] = created_token
     return_value['Status'] = 'SUCCESS'
+    #dirty hack to not log secret keys
+    SecretAccessKey = return_value["AccessKey"].pop("SecretAccessKey", None)
     print(json.dumps(return_value))
+    return_value["AccessKey"]["SecretAccessKey"] = SecretAccessKey
     return return_value
