@@ -18,6 +18,7 @@
     "MasterDatabasePassword": {
       "Type": "String",
       "Description": "The master password for token database",
+      "Default": "honeycomb",
       "NoEcho": "true"
     },
     "FunctionDatabaseUser": {
@@ -29,11 +30,13 @@
     "FunctionDatabasePassword": {
       "Type": "String",
       "Description": "The password lambda functions will use to talk to the token database",
+      "Default": "whinniethepooh",
       "NoEcho": "true"
     },
     "IamTokenUserPath": {
       "Type": "String",
-      "Description": "The path to use for token IAM users"
+      "Description": "The path to use for token IAM users",
+      "Default": "/SpaceCrab/"
     },
     "IamPath": {
       "Type": "String",
@@ -43,25 +46,30 @@
     "PagerdutyApiToken": {
       "Type": "String",
       "Description": "Pagerduty API Token",
+      "Default": "DONTUSE",
       "NoEcho": "true"
     },
     "AlertEmailAddress": {
       "Type": "String",
       "Description": "Address to send alert emails to",
+      "Default": "DONTUSE",
       "NoEcho": "true"
     },
     "AlertFromAddress": {
       "Type": "String",
       "Description": "Address to send alert emails from",
+      "Default": "DONTUSE",
       "NoEcho": "true"
     },
     "SESRegion": {
       "Type": "String",
-      "Description": "Region to use for SES API calls."
+      "Description": "Region to use for SES API calls.",
+      "Default": "us-west-2"
     },
     "OwnerArn": {
       "Type": "String",
-      "Description": "Arn to use as owner of KMS/Buckets"
+      "Description": "Arn to use as owner of KMS/Buckets",
+      "Default": ""
     }
   },
   "Resources": {
@@ -536,6 +544,28 @@
           ]
         }
       }
+    },
+    "ApiGatewayStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "DependsOn": [
+        "ManagementStack",
+        "NetworkingStack",
+        "AlertingStack"
+      ],
+      "Properties": {
+        "TemplateURL": {
+          "Fn::Join": [
+            "",
+            [
+              "https://s3.amazonaws.com/",
+              {
+                "Ref": "TemplateCodeBucket"
+              },
+              "/apigateway.template"
+            ]
+          ]
+        }
+      }
     }
   },
   "Outputs": {
@@ -645,6 +675,18 @@
       },
       "Export": {
         "Name": "TokenGroup"
+      }
+    },
+    "ApiGatewayRootUrl": {
+      "Description": "The root URL for the Spacecrab REST API.",
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiGatewayStack",
+          "Outputs.RootUrl"
+        ]
+      },
+      "Export": {
+        "Name": "ApiGatewayRootUrl"
       }
     }
   }
