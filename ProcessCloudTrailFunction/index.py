@@ -66,6 +66,7 @@ def lambda_handler(event, context):
             TopicArn=sns_topic,
             Message=json.dumps(item)
             )
+        print(json.dumps(item))
         # emit to sns
 
 
