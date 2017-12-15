@@ -7,7 +7,7 @@ import base64
 
 
 def get_available_user(path=None):
-    iam =  boto3.client('iam')
+    iam = boto3.client('iam')
     for user in list_users(path):
         # check for token counts, if too many, bail:
         try:
@@ -54,6 +54,7 @@ def lambda_handler(event, context):
     Notes = event.get('Notes', None)
     return_value = {}
     return_value['Status'] = 'FAILED'
+    return_value['Function'] = 'AddTokenFunction'
     encrypted_db_password = os.environ.get('ENCRYPTED_DATABASE_PASSWORD', None)
     encrypted_db_password = base64.b64decode(encrypted_db_password)
     try:
@@ -71,8 +72,8 @@ def lambda_handler(event, context):
                                password=db_password)
         cur = con.cursor()
     except Exception as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     # Try and generate a custom username
@@ -101,7 +102,8 @@ def lambda_handler(event, context):
         user_blob = get_available_user(honey_path)
         if user_blob is None:
             print('Unable to locate user with space to add tokens')
-            return_value['Reason'] = 'Unable to locate user with space to add tokens - please @ AWS to increase your IAM user limit or delete some.'
+            return_value['Reason'] = 'Unable to locate user with space to add tokens - please @ AWS'
+            return_value['Reason'] += ' to increase your IAM user limit or delete some.'
             return return_value
         # else assume everything is fine it's fiiine
         UserArn = user_blob['Arn']
@@ -115,8 +117,8 @@ def lambda_handler(event, context):
             UserName=user
         )
     except ClientError as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     try:
@@ -128,8 +130,8 @@ def lambda_handler(event, context):
         response['AccessKey']['CreateDate'] = response['AccessKey']['CreateDate'].isoformat()
         return_value['AccessKey'] = response['AccessKey']
     except ClientError as e:
-        print(e.message)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     # Insert new token entry into the TokenDatabase
@@ -160,22 +162,27 @@ def lambda_handler(event, context):
         con.commit()
         con.close()
     except Exception as e:
-        print(e.message)
         message = '\n'
         try:
             client.delete_access_key(AccessKeyId=AccessKeyId)
         except ClientError as e:
-            print('Unable to delete access key %s' % AccessKeyId)
             message += 'Unable to delete access key %s\n' % AccessKeyId
         try:
             client.delete_user(UserName=user)
         except ClientError as e:
-            print('Unable to delete user %s\n' % user)
             message += 'Unable to delete user %s\n' % user
 
         message = e.message + message
         return_value['Reason'] = message
         return return_value
-
+    created_token = {
+        "AccessKeyId": AccessKeyId, "user": user, "Owner": Owner,
+        "Location": Location, "ExpiresAt": ExpiresAt, "Notes": Notes
+    }
+    return_value['Notes'] = created_token
     return_value['Status'] = 'SUCCESS'
+    # dirty hack to not log secret keys
+    SecretAccessKey = return_value["AccessKey"].pop("SecretAccessKey", None)
+    print(json.dumps(return_value))
+    return_value["AccessKey"]["SecretAccessKey"] = SecretAccessKey
     return return_value

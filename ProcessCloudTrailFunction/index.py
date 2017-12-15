@@ -30,8 +30,8 @@ def lambda_handler(event, context):
                                password=db_password)
         cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     except Exception as e:
-        print(e)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     try:
@@ -52,8 +52,8 @@ def lambda_handler(event, context):
                 user_records[row['username']] = row
 
     except Exception as e:
-        print(e)
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
     records = []
 
@@ -66,6 +66,7 @@ def lambda_handler(event, context):
             TopicArn=sns_topic,
             Message=json.dumps(item)
             )
+        print(json.dumps(item))
         # emit to sns
 
 

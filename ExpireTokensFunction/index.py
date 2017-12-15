@@ -1,6 +1,7 @@
 import os
 import boto3
 import base64
+import json
 from botocore.exceptions import ClientError
 import psycopg2
 
@@ -26,9 +27,9 @@ def lambda_handler(event, context):
                                password=db_password)
         cur = con.cursor()
     except Exception as e:
-        print(e.message)
         return_value['Status'] = 'FAILED'
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     try:
@@ -45,9 +46,9 @@ def lambda_handler(event, context):
                     '''
                     )
     except Exception as e:
-        print(e.message)
         return_value['Status'] = 'FAILED'
         return_value['Reason'] = e.message
+        print(json.dumps(return_value))
         return return_value
 
     if cur:
@@ -59,7 +60,8 @@ def lambda_handler(event, context):
 
     return_value['Status'] = 'SUCCESS'
     return_value['Reason'] = 'Successfully expired %d token(s)' % expired_count
-    print(return_value)
+    print(json.dumps(return_value))
+    return return_value
 
 
 def expire_token(AccessKeyId, UserName, client, con):
