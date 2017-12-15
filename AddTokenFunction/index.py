@@ -6,6 +6,40 @@ import json
 import base64
 
 
+def get_available_user(path=None):
+    iam = boto3.client('iam')
+    for user in list_users(path):
+        # check for token counts, if too many, bail:
+        try:
+            response = iam.list_access_keys(UserName=user['UserName'])
+            if len(response['AccessKeyMetadata']) >= 2:
+                continue
+            else:
+                return user
+        except ClientError as e:
+            pass
+
+
+def list_users(path=None):
+    iam = boto3.client('iam')
+    if path is None:
+        path = os.environ.get('HONEY_TOKEN_USER_PATH', '/')
+    # there has to be a better way to initialise paginated API calls but idk what it is.
+    response = iam.list_users(PathPrefix=path)
+    is_truncated = response['IsTruncated']
+    marker = response.get('Marker', None)
+    users = response['Users']
+    for user in users:
+        yield user
+    while is_truncated:
+        response = iam.list_users(PathPrefix=path, Marker=marker)
+        is_truncated = response['IsTruncated']
+        marker = response.get('Marker', None)
+        users = response['Users']
+        for user in users:
+            yield user
+
+
 def lambda_handler(event, context):
     honey_path = os.environ['HONEY_TOKEN_USER_PATH']
     token_group = os.environ['TOKEN_GROUP']
@@ -62,20 +96,20 @@ def lambda_handler(event, context):
         UserArn = response['User']['Arn']
         user = response['User']['UserName']
     except ClientError as e:
-        return_value['Reason'] = e.message
-        print(json.dumps(return_value))
-        return return_value
-
-    # check for token counts, if too many, bail:
-    try:
-        response = client.list_access_keys(UserName=user)
-        if len(response['AccessKeyMetadata']) >= 2:
-            # too many keys
-            return_value['Reason'] = "Unable to create more keys for user %s" % user
-            print(json.dumps(return_value))
+        print(e.message)
+        # It's reasonably plausible we've run out of IAM users, by now.
+        # So let's go through them and find one we can add a new key to.
+        user_blob = get_available_user(honey_path)
+        if user_blob is None:
+            print('Unable to locate user with space to add tokens')
+            return_value['Reason'] = 'Unable to locate user with space to add tokens - please @ AWS'
+            return_value['Reason'] += ' to increase your IAM user limit or delete some.'
             return return_value
-    except ClientError as e:
-        pass
+        # else assume everything is fine it's fiiine
+        UserArn = user_blob['Arn']
+        user = user_blob['UserName']
+        user_blob['CreateDate'] = user_blob['CreateDate'].isoformat()
+        return_value['User'] = user_blob
 
     try:
         response = client.add_user_to_group(
@@ -147,7 +181,7 @@ def lambda_handler(event, context):
     }
     return_value['Notes'] = created_token
     return_value['Status'] = 'SUCCESS'
-    #dirty hack to not log secret keys
+    # dirty hack to not log secret keys
     SecretAccessKey = return_value["AccessKey"].pop("SecretAccessKey", None)
     print(json.dumps(return_value))
     return_value["AccessKey"]["SecretAccessKey"] = SecretAccessKey
