@@ -55,61 +55,6 @@
                 }
             }
         },
-        "ApiGatewayCloudWatchLogsRole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "apigateway.amazonaws.com"
-                                ]
-                            },
-                            "Action": [
-                                "sts:AssumeRole"
-                            ]
-                        }
-                    ]
-                },
-                "Policies": [
-                    {
-                        "PolicyName": "ApiGatewayLogsPolicy",
-                        "PolicyDocument": {
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "logs:CreateLogGroup",
-                                        "logs:CreateLogStream",
-                                        "logs:DescribeLogGroups",
-                                        "logs:DescribeLogStreams",
-                                        "logs:PutLogEvents",
-                                        "logs:GetLogEvents",
-                                        "logs:FilterLogEvents"
-                                    ],
-                                    "Resource": "*"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        "ApiGatewayAccount": {
-            "Type": "AWS::ApiGateway::Account",
-            "Properties": {
-                "CloudWatchRoleArn": {
-                    "Fn::GetAtt": [
-                        "ApiGatewayCloudWatchLogsRole",
-                        "Arn"
-                    ]
-                }
-            }
-        },
         "SpaceCrabApiStage": {
             "DependsOn": [
                 "ApiDeployment"
@@ -119,14 +64,6 @@
                 "DeploymentId": {
                     "Ref": "ApiDeployment"
                 },
-                "MethodSettings": [
-                    {
-                        "DataTraceEnabled": true,
-                        "HttpMethod": "*",
-                        "LoggingLevel": "INFO",
-                        "ResourcePath": "/*"
-                    }
-                ],
                 "RestApiId": {
                     "Ref": "SpaceCrabApi"
                 },
