@@ -406,6 +406,75 @@
         }
       }
     },
+    "GetTokenFunctionStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "DependsOn": [
+        "TokenGroup",
+        "TokenDatabase",
+        "AddTokenFunctionStack"
+      ],
+      "Properties": {
+        "Parameters": {
+          "FunctionCodeBucket": {
+            "Ref": "FunctionCodeBucket"
+          },
+          "FunctionDatabaseUser": {
+            "Ref": "FunctionDatabaseUser"
+          },
+          "EncryptedFunctionDatabasePassword": {
+            "Ref": "EncryptedFunctionDatabasePassword"
+          },
+          "IamPath": {
+            "Ref": "IamPath"
+          },
+          "TokenDatabaseAddress": {
+            "Fn::GetAtt": [
+              "TokenDatabase",
+              "Endpoint.Address"
+            ]
+          },
+          "TokenDatabasePort": {
+            "Fn::GetAtt": [
+              "TokenDatabase",
+              "Endpoint.Port"
+            ]
+          },
+          "SpaceCrabLambdaExecutionRole": {
+            "Ref": "SpaceCrabLambdaExecutionRole"
+          },
+          "SpaceCrabLambdaExecutionRoleArn": {
+            "Ref": "SpaceCrabLambdaExecutionRoleArn"
+          },
+          "SpaceCrabFunctionSecurityGroup": {
+            "Ref": "SpaceCrabFunctionSecurityGroup"
+          },
+          "SpaceCrabFunctionSubnet1": {
+            "Ref": "SpaceCrabFunctionSubnet1"
+          },
+          "SpaceCrabFunctionSubnet2": {
+            "Ref": "SpaceCrabFunctionSubnet2"
+          },
+          "LambdaAddTokenFunctionArn": {
+            "Fn::GetAtt": [
+              "AddTokenFunctionStack",
+              "Outputs.LambdaAddTokenFunctionArn"
+            ]
+          }
+        },
+        "TemplateURL": {
+          "Fn::Join": [
+            "",
+            [
+              "https://s3.amazonaws.com/",
+              {
+                "Ref": "TemplateCodeBucket"
+              },
+              "/get-token-function.template"
+            ]
+          ]
+        }
+      }
+    },
     "UpdateTokenFunctionStack": {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn": [
