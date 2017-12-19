@@ -185,6 +185,7 @@
     "EncryptedPagerdutyToken": {
       "Type": "AWS::CloudFormation::CustomResource",
       "Version": "1.0",
+      "DeletionPolicy": "Retain",      
       "Properties": {
         "ServiceToken": {
           "Fn::GetAtt": [
@@ -203,6 +204,7 @@
     "EncryptedAlertEmailAddress": {
       "Type": "AWS::CloudFormation::CustomResource",
       "Version": "1.0",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "ServiceToken": {
           "Fn::GetAtt": [
@@ -221,6 +223,7 @@
     "EncryptedFromEmailAddress": {
       "Type": "AWS::CloudFormation::CustomResource",
       "Version": "1.0",
+      "DeletionPolicy": "Retain",
       "Properties": {
         "ServiceToken": {
           "Fn::GetAtt": [
