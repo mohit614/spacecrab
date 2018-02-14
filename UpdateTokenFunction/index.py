@@ -106,8 +106,12 @@ def lambda_handler(event, context):
         cur.close()
         updated_token = {
             "AccessKeyId": AccessKeyId, "Owner": Owner, "Location": Location,
-            "ExpiresAt": ExpiresAt.isoformat(), "Notes": Notes
+             "Notes": Notes
             }
+        if ExpiresAt:
+            updated_token['ExpiresAt'] = ExpiresAt.isoformat()
+        else:
+            updated_token['ExpiresAt'] = None
     except Exception as e:
         return_value['Reason'] = e.message
         print(json.dumps(return_value))

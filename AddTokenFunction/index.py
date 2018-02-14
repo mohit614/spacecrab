@@ -184,8 +184,12 @@ def lambda_handler(event, context):
         return return_value
     created_token = {
         "AccessKeyId": AccessKeyId, "user": user, "Owner": Owner,
-        "Location": Location, "ExpiresAt": ExpiresAt.isoformat(), "Notes": Notes
+        "Location": Location, "Notes": Notes
     }
+    if ExpiresAt:
+        created_token['ExpiresAt'] = ExpiresAt.isoformat()
+    else:
+        created_token['ExpiresAt'] = None
     return_value['Notes'] = created_token
     return_value['Status'] = 'SUCCESS'
     # dirty hack to not log secret keys
