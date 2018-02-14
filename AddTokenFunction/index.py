@@ -4,6 +4,7 @@ from botocore.exceptions import ClientError
 import psycopg2
 import json
 import base64
+from dateutil.parser import parse
 
 
 def get_available_user(path=None):
@@ -55,6 +56,12 @@ def lambda_handler(event, context):
     return_value = {}
     return_value['Status'] = 'FAILED'
     return_value['Function'] = 'AddTokenFunction'
+    if ExpiresAt and isinstance(ExpiresAt, basestring):
+        try:
+            ExpiresAt = parse(ExpiresAt)
+        except ValueError as e:
+            ExpiresAt = None
+
     encrypted_db_password = os.environ.get('ENCRYPTED_DATABASE_PASSWORD', None)
     encrypted_db_password = base64.b64decode(encrypted_db_password)
     try:
