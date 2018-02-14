@@ -184,7 +184,7 @@ def lambda_handler(event, context):
         return return_value
     created_token = {
         "AccessKeyId": AccessKeyId, "user": user, "Owner": Owner,
-        "Location": Location, "ExpiresAt": ExpiresAt, "Notes": Notes
+        "Location": Location, "ExpiresAt": ExpiresAt.isoformat(), "Notes": Notes
     }
     return_value['Notes'] = created_token
     return_value['Status'] = 'SUCCESS'
