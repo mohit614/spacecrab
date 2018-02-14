@@ -37,6 +37,7 @@ def lambda_handler(event, context):
     return_value = {}
     return_value['Status'] = 'FAILED'
     encrypted_email = os.environ.get('ENCRYPTED_EMAIL', None)
+    ses_region = os.environ.get('SES_REGION', 'us-west-2')
     if None in [encrypted_email]:
         return_value['Reason'] = 'Missing email address'
         print(json.dumps(return_value))
@@ -78,7 +79,7 @@ def lambda_handler(event, context):
     for k in ['notes', 'location', 'owner']:
         highlights[k] = sns_message['alertMetadata'][k]
 
-    ses = boto3.client('ses', region_name='us-west-2')
+    ses = boto3.client('ses', region_name=ses_region)
     email_from = from_email
     email_to = email
     email_subject = "AWS honey token usage alert"
