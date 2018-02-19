@@ -10,9 +10,6 @@ import time
 import json
 import boto3
 import botocore.exceptions
-import argparse
-import logging
-from pprint import pprint
 from fqdn import FQDN
 
 SPACECRAB = r"""
@@ -28,24 +25,6 @@ SPACECRAB = r"""
      V  V      V  V
 """
 
-parser = argparse.ArgumentParser(description='PROJECT SpaceCrab')
-parser.add_argument('--disable-cfn-rollback', help='When creating a AWS CloudFormation stack disables the automated rollback on errors to help with debugging.', action='store_true')
-parser.add_argument('--verbose', '-v', action='count')
-args = parser.parse_args()
-
-logger = logging.getLogger(__name__)
-ch = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-if args.verbose:
-    logger.setLevel(logging.DEBUG)
-    ch.setLevel(logging.DEBUG)
-    logger.debug("Verbose logging enabled")
-else:
-    logger.setLevel(logging.INFO)
-    ch.setLevel(logging.INFO)
-
 
 def wait_on_stack(stackId):
     '''
@@ -58,11 +37,6 @@ def wait_on_stack(stackId):
         time.sleep(3)
 
         response = cfn.describe_stacks(StackName=stackId)
-        if args.verbose > 0:
-            logger.debug("Polling CFN stack: %s" % stackId)
-            logger.debug(pprint(cfn))
-            logger.debug(pprint(response))
-
         if response['Stacks'][0]['StackStatus'] == 'CREATE_COMPLETE':
             return True
         elif response['Stacks'][0]['StackStatus'] == 'CREATE_IN_PROGRESS':
@@ -110,12 +84,10 @@ def get_buckets(OwnerArn=None):
             parameters = convert_parameters(parameters)
             response = cfn.create_stack(StackName='SpaceCrabCodeBucketStack',
                                         TemplateBody=bucket_template,
-                                        Parameters=parameters,
-                                        DisableRollback=args.disable_cfn_rollback)
+                                        Parameters=parameters)
         else:
             response = cfn.create_stack(StackName='SpaceCrabCodeBucketStack',
-                                        TemplateBody=bucket_template,
-                                        DisableRollback=args.disable_cfn_rollback)
+                                        TemplateBody=bucket_template)
         # Hurry up an wait for CFN
         wait_on_stack(response['StackId'])
         # bucket_stack = response['StackId']
@@ -631,9 +603,7 @@ def new_stack(cfn):
                          TemplateURL='https://s3.amazonaws.com/%s/bootstrap-networking.template'
                                      % template_bucket,
                          Capabilities=['CAPABILITY_IAM'],
-                         Tags=tags['tags'],
-                         DisableRollback=args.disable_cfn_rollback
-                         )
+                         Tags=tags['tags'])
         # VPC is required for deployment, ETA is usually 3-4 minutes.
         # Hurry up an wait for CFN
         wait_on_stack(response['StackId'])
@@ -649,9 +619,7 @@ def new_stack(cfn):
                      Parameters=parameters,
                      TimeoutInMinutes=60,
                      Capabilities=['CAPABILITY_IAM'],
-                     Tags=tags['tags'],
-                     DisableRollback=args.disable_cfn_rollback
-                     )
+                     Tags=tags['tags'])
 
 
 def update_stack(cfn):
