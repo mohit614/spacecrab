@@ -40,8 +40,9 @@ You can read our blog post about this here: https://developer.atlassian.com/blog
 ## Overview ##
 
 ### Quickstart ###
+1. Install the SpaceCrab dependencies. `pip install -r requirements.txt`
 1. Ensure you have valid AWS credentials in your environment.
-2. Run `python manager.py` and answer the questions.
+1. Run `python manager.py` and answer the questions.
 
 ### Slower Start ###
 1. Build an empty AWS account, that you will only use for this alerting. You're going to distribute these keys all over the place, and they're relatively safe but keep it away from your prod infrastructure.
@@ -198,6 +199,17 @@ Prior to accepting your contributions we ask that you please follow the appropri
 
 * [CLA for corporate contributors](https://na2.docusign.net/Member/PowerFormSigning.aspx?PowerFormId=e1c17c66-ca4d-4aab-a953-2c231af4a20b)
 * [CLA for individuals](https://na2.docusign.net/Member/PowerFormSigning.aspx?PowerFormId=3f94fbdc-2fbe-46ac-b14c-5d152700ae5d)
+
+## Developing tricks
+
+### CloudFormation debugging
+
+CloudFormation is fairly fragile and tedious when using nested stacks. The upside is you can fire-and-forget and eventually you get a SpaceCrab stack or not.
+
+In the cases of not the CloudFormation service will roll back everything leaving behind a blank slate. To get visibility of the errors that caused this;
+
+1. Open the CloudFormation console
+1. Switch the stack filter to ***Failed*** or if you missed it ***Deleted***
 
 # Copyright
 

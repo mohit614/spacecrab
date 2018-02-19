@@ -336,48 +336,72 @@
       "Description": "VPC for all honey resources",
       "Value": {
         "Ref": "SpaceCrabVpc"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabVpc"
       }
     },
     "SpaceCrabDatabaseSubnet1": {
       "Description": "First subnet for the token database",
       "Value": {
         "Ref": "SpaceCrabDatabaseSubnet1"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabDatabaseSubnet1"
       }
     },
     "SpaceCrabDatabaseSubnet2": {
       "Description": "Second subnet for the token database",
       "Value": {
         "Ref": "SpaceCrabDatabaseSubnet2"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabDatabaseSubnet2"
       }
     },
     "SpaceCrabFunctionSubnet1": {
       "Description": "First subnet for lambda functions",
       "Value": {
         "Ref": "SpaceCrabFunctionSubnet1"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabFunctionSubnet1"
       }
     },
     "SpaceCrabFunctionSubnet2": {
       "Description": "Second subnet for lambda functions",
       "Value": {
         "Ref": "SpaceCrabFunctionSubnet2"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabFunctionSubnet2"
       }
     },
     "SpaceCrabDatabaseSubnetGroup": {
       "Description": "Subnet group for the token database",
       "Value": {
         "Ref": "SpaceCrabDatabaseSubnetGroup"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabDatabaseSubnetGroup"
       }
     },
     "SpaceCrabFunctionSecurityGroup": {
       "Description": "Security group for lambda functions",
       "Value": {
         "Ref": "SpaceCrabFunctionSecurityGroup"
+      },
+      "Export" : {
+        "Name" : "SpaceCrabFunctionSecurityGroup"
       }
     },
     "TokenDatabaseSecurityGroup": {
       "Description": "Security group for token database",
       "Value": {
         "Ref": "TokenDatabaseSecurityGroup"
+      },
+      "Export" : {
+        "Name" : "TokenDatabaseSecurityGroup"
       }
     }
   }
