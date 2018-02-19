@@ -90,19 +90,6 @@ def get_buckets(OwnerArn=None):
                                         TemplateBody=bucket_template)
         # Hurry up an wait for CFN
         wait_on_stack(response['StackId'])
-        # bucket_stack = response['StackId']
-        #
-        # # wait for stack to deploy, hey
-        # created = False
-        # while not created:
-        #     time.sleep(3)
-        #     print("  ...")
-        #     response = cfn.describe_stacks(StackName=bucket_stack)
-        #     if response['Stacks'][0]['StackStatus'] == 'CREATE_COMPLETE':
-        #         created = True
-        #     elif response['Stacks'][0]['StackStatus'] == 'CREATE_FAILED':
-        #         print('Building stack "SpaceCrabCodeBucketStack" failed. idk, check it out in console.')
-        #         sys.exit()
         return get_buckets()
     return (template_bucket, function_bucket, api_bucket)
 
@@ -256,8 +243,7 @@ def get_email():
     print("OK, testing SES a bit.")
 
     ses = boto3.client('ses', region_name=region)
-    # if parameters['AlertEmailAddress'] != 'DONTUSE':
-    # ses = boto3.client('ses', region_name='us-east-1')
+
     try:
         domain = from_email.split('@')[-1]
         print("  Checking domain...")
