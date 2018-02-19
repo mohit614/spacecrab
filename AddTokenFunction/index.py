@@ -168,11 +168,6 @@ def lambda_handler(event, context):
         ))
         con.commit()
         con.close()
-        created_token = {
-            "AccessKeyId": AccessKeyId, "user": user, "Owner": Owner,
-            "Location": Location, "ExpiresAt": ExpiresAt, "Notes": Notes
-            }
-        print(json.dumps(created_token))
     except Exception as e:
         message = '\n'
         try:
