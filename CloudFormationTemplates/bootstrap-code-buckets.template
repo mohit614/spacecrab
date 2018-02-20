@@ -81,61 +81,6 @@
         }
       }
     },
-    "ApiCodeBucketPolicy": {
-      "Type": "AWS::S3::BucketPolicy",
-      "DependsOn": [
-        "ApiCodeBucket"
-      ],
-      "Properties": {
-        "Bucket": {
-          "Ref": "ApiCodeBucket"
-        },
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": "*",
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:aws:s3:::",
-                    {
-                      "Ref": "ApiCodeBucket"
-                    }
-                  ]
-                ]
-              },
-              "Principal": {
-                "AWS": [
-                  {
-                    "Ref": "OwnerArn"
-                  }
-                ]
-              }
-            },
-            {
-              "Sid":"PublicApiAccess",
-              "Effect":"Allow",
-              "Principal": "*",
-              "Action":["s3:GetObject"],
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:aws:s3:::",
-                    {
-                      "Ref": "ApiCodeBucket"
-                    },
-                    "/*",
-                  ]
-                ]
-              }
-            }
-          ]
-        }
-      }
-    },
     "FunctionCodeBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
@@ -146,16 +91,6 @@
       "Type": "AWS::S3::Bucket",
       "Properties": {
         "AccessControl": "BucketOwnerFullControl"
-      }
-    },
-    "ApiCodeBucket": {
-      "Type": "AWS::S3::Bucket",
-      "Properties" : {
-         "AccessControl" : "PublicRead",
-         "BucketName" : "spacecrabcodebucketstack-apicodebucket",
-         "WebsiteConfiguration" : {
-            "IndexDocument" : "swagger.json"
-         }
       }
     }
   },
@@ -177,22 +112,6 @@
       "Export": {
         "Name": "SpaceCrabTemplateCodeBucket"
       }
-    },
-    "SpaceCrabApiCodeBucket": {
-      "Description": "The name of the s3 bucket to upload swagger JSON to",
-      "Value": {
-        "Ref": "ApiCodeBucket"
-      },
-      "Export": {
-        "Name": "SpaceCrabApiCodeBucket"
-      }
-    },
-    "SpaceCrabApiCodeBucketUrl": {
-      "Description": "The website URL for the API bucket",
-      "Value": { "Fn::GetAtt" : [ "ApiCodeBucket", "WebsiteURL" ] },
-      "Export": {
-        "Name": "SpaceCrabApiUrl"
-      }
-    },
+    }
   }
 }
