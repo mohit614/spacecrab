@@ -61,18 +61,7 @@
     },
     "OwnerArn": {
       "Type": "String",
-      "Description": "Arn to use as owner of KMS/Buckets",
-      "Default": ""
-    },
-    "CustomFqdn": {
-      "Type": "String",
-      "Description": "An FQDN for the API gateway custom domain",
-      "Default": ""
-    },
-    "CustomFqdnAcmArn": {
-      "Type": "String",
-      "Description": "An ACM ARN for the API gateway custom domain",
-      "Default": ""
+      "Description": "Arn to use as owner of KMS/Buckets"
     }
   },
   "Resources": {
@@ -161,6 +150,9 @@
     },
     "EncryptionStack": {
       "Type": "AWS::CloudFormation::Stack",
+      "DependsOn": [
+        "NetworkingStack"
+      ],
       "Properties": {
         "Parameters": {
           "FunctionCodeBucket": {
@@ -178,9 +170,24 @@
               "Arn"
             ]
           },
-          "SpaceCrabFunctionSubnet1": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet1" },
-          "SpaceCrabFunctionSubnet2":  { "Fn::ImportValue" : "SpaceCrabFunctionSubnet2" },
-          "SpaceCrabFunctionSecurityGroup":  { "Fn::ImportValue" : "SpaceCrabFunctionSecurityGroup" },
+          "SpaceCrabFunctionSubnet1": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet1"
+            ]
+          },
+          "SpaceCrabFunctionSubnet2": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet2"
+            ]
+          },
+          "SpaceCrabFunctionSecurityGroup": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSecurityGroup"
+            ]
+          },
           "MasterDatabasePassword": {
             "Ref": "MasterDatabasePassword"
           },
@@ -214,9 +221,28 @@
         }
       }
     },
+    "NetworkingStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "Parameters": {},
+        "TemplateURL": {
+          "Fn::Join": [
+            "",
+            [
+              "https://s3.amazonaws.com/",
+              {
+                "Ref": "TemplateCodeBucket"
+              },
+              "/networking.template"
+            ]
+          ]
+        }
+      }
+    },
     "ManagementStack": {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn": [
+        "NetworkingStack",
         "EncryptionStack"
       ],
       "Properties": {
@@ -260,10 +286,30 @@
           "IamPath": {
             "Ref": "IamPath"
           },
-          "SpaceCrabFunctionSubnet1": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet1" },
-          "SpaceCrabFunctionSubnet2": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet2" },
-          "SpaceCrabDatabaseSubnetGroup":  { "Fn::ImportValue" : "SpaceCrabDatabaseSubnetGroup" },
-          "SpaceCrabFunctionSecurityGroup":  { "Fn::ImportValue" : "SpaceCrabFunctionSecurityGroup" },
+          "SpaceCrabFunctionSubnet1": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet1"
+            ]
+          },
+          "SpaceCrabFunctionSubnet2": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet2"
+            ]
+          },
+          "SpaceCrabDatabaseSubnetGroup": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabDatabaseSubnetGroup"
+            ]
+          },
+          "SpaceCrabFunctionSecurityGroup": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSecurityGroup"
+            ]
+          },
           "SpaceCrabLambdaExecutionRole": {
             "Ref": "SpaceCrabLambdaExecutionRole"
           },
@@ -273,7 +319,12 @@
               "Arn"
             ]
           },
-          "TokenDatabaseSecurityGroup": { "Fn::ImportValue" : "TokenDatabaseSecurityGroup" }
+          "TokenDatabaseSecurityGroup": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.TokenDatabaseSecurityGroup"
+            ]
+          }
         },
         "TemplateURL": {
           "Fn::Join": [
@@ -292,7 +343,8 @@
     "AlertingStack": {
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn": [
-        "ManagementStack"
+        "ManagementStack",
+        "NetworkingStack"
       ],
       "Properties": {
         "Parameters": {
@@ -347,9 +399,24 @@
           "IamTokenUserPath": {
             "Ref": "IamTokenUserPath"
           },
-          "SpaceCrabFunctionSubnet1": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet1" },
-          "SpaceCrabFunctionSubnet2": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet2" },
-          "SpaceCrabFunctionSecurityGroup": { "Fn::ImportValue" : "SpaceCrabFunctionSecurityGroup" },
+          "SpaceCrabFunctionSubnet1": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet1"
+            ]
+          },
+          "SpaceCrabFunctionSubnet2": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet2"
+            ]
+          },
+          "SpaceCrabFunctionSecurityGroup": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSecurityGroup"
+            ]
+          },
           "TokenDatabaseAddress": {
             "Fn::GetAtt": [
               "ManagementStack",
@@ -381,6 +448,7 @@
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn": [
         "ManagementStack",
+        "NetworkingStack",
         "AlertingStack"
       ],
       "Properties": {
@@ -409,9 +477,24 @@
           "IamPath": {
             "Ref": "IamPath"
           },
-          "SpaceCrabFunctionSubnet1": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet1" },
-          "SpaceCrabFunctionSubnet2": { "Fn::ImportValue" : "SpaceCrabFunctionSubnet2" },
-          "SpaceCrabFunctionSecurityGroup": { "Fn::ImportValue" : "SpaceCrabFunctionSecurityGroup" },
+          "SpaceCrabFunctionSubnet1": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet1"
+            ]
+          },
+          "SpaceCrabFunctionSubnet2": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSubnet2"
+            ]
+          },
+          "SpaceCrabFunctionSecurityGroup": {
+            "Fn::GetAtt": [
+              "NetworkingStack",
+              "Outputs.SpaceCrabFunctionSecurityGroup"
+            ]
+          },
           "LambdaAlertPagerdutyFunctionArn": {
             "Fn::GetAtt": [
               "AlertingStack",
@@ -458,6 +541,7 @@
       "Type": "AWS::CloudFormation::Stack",
       "DependsOn": [
         "ManagementStack",
+        "NetworkingStack",
         "AlertingStack"
       ],
       "Properties": {
@@ -472,10 +556,6 @@
               "/apigateway.template"
             ]
           ]
-        },
-        "Parameters": {
-          "SpaceCrabCustomFqdn": { "Ref": "CustomFqdn" },
-          "SpaceCrabCustomFqdnAcmArn": { "Ref": "CustomFqdnAcmArn" },
         }
       }
     }
