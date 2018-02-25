@@ -42,6 +42,19 @@
                 }
             }
         },
+        "LambdaPermissionGetToken": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:invokeFunction",
+                "FunctionName": {
+                    "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:GetTokenFunction"
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SpaceCrabApi}/*"
+                }
+            }
+        },
         "LambdaPermissionUpdateToken": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
