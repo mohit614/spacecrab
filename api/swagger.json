@@ -10,6 +10,7 @@
       }
   },
   "basePath": "/v0",
+  "host": { "Ref": "SpaceCrabCustomFqdn" },
   "tags": [
       {
           "name": "token",
@@ -21,7 +22,7 @@
   ],
   "paths": {
       "/token/{location}": {
-"get": {
+  "get": {
               "tags": [
                   "token"
               ],
