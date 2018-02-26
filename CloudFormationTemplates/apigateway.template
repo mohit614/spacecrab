@@ -204,14 +204,14 @@
                               "parameters": [
                                   {
                                       "in": "path",
-                                      "name": "location",
+                                      "name": "Location",
                                       "description": "Token location",
                                       "required": true,
                                       "type": "string"
                                   },
                                   {
                                       "in": "query",
-                                      "name": "owner",
+                                      "name": "Owner",
                                       "description": "Token owner",
                                       "type": "string"
                                   }
