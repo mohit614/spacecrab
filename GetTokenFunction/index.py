@@ -8,8 +8,8 @@ import base64
 
 def lambda_handler(event, context):
     lambda_client = boto3.client('lambda')
-    Owner = event.get('Owner', None)
-    Location = event.get('Location', None)
+    Owner = event['params']['querystring']['Owner']
+    Location = event['params']['path']['Location']
     return_value = {}
     return_value['Status'] = 'FAILED'
     return_value['Function'] = 'GetTokenFunction'
@@ -86,9 +86,12 @@ def lambda_handler(event, context):
             return return_value
         else:
             # no token, let's make one:
+            payload = {}
+            payload['Owner'] = Owner
+            payload['Location'] = Location
             response = lambda_client.invoke(
                 FunctionName='AddTokenFunction',
-                Payload=json.dumps(event)
+                Payload=json.dumps(payload)
                 )
             return json.load(response['Payload'])
 
