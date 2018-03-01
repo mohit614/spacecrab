@@ -188,7 +188,7 @@
                   ],
                   "paths": {
                       "/token/{Location}": {
-                  "get": {
+                            "get": {
                               "tags": [
                                   "token"
                               ],
@@ -571,6 +571,12 @@
                                   "description": "The message returned by the DeleteTokenFunction.\nexample:\n- \"Successfully deleted AKIAGEE0UZ8EEW6AEB4K and marked as deactivated in db\"\n"
                               }
                           }
+                      }
+                  },
+                  "x-amazon-apigateway-request-validators": {
+                      "Validate query string parameters and headers": {
+                        "validateRequestParameters": true,
+                        "validateRequestBody": false
                       }
                   },
                   "externalDocs": {
