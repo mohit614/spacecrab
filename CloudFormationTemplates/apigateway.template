@@ -121,6 +121,7 @@
         },
         "SpaceCrabCustomDomain": {
           "Type": "AWS::ApiGateway::DomainName",
+          "Condition": "UseCustomFqdn",
           "Properties": {
             "DomainName": {
                 "Ref": "SpaceCrabCustomFqdn"
