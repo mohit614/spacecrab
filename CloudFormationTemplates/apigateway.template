@@ -12,7 +12,7 @@
             "Type": "String"
         },
         "SpaceCrabCustomFqdnAcmArn": {
-            "Description": "A custom FQDN for the API gateway. eg spacecrab.example.org",
+            "Description": "An ARN pointing to your Certificate Manager certificate for the SpaceCrab API",
             "Default": "",
             "Type": "String"
         }
