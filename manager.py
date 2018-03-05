@@ -10,7 +10,7 @@ import time
 import json
 import boto3
 import botocore.exceptions
-
+from fqdn import FQDN
 
 SPACECRAB = r"""
   __                __
@@ -26,9 +26,32 @@ SPACECRAB = r"""
 """
 
 
+def wait_on_stack(stackId):
+    '''
+    Boto waiter doesn't provide user feedback while waiting on a CFN stack so we implement our own in wait_on_stack() passing in a CFN stackId
+    '''
+    cfn = boto3.client('cloudformation')
+
+    created = False
+    while not created:
+        time.sleep(3)
+
+        response = cfn.describe_stacks(StackName=stackId)
+        if response['Stacks'][0]['StackStatus'] == 'CREATE_COMPLETE':
+            return True
+        elif response['Stacks'][0]['StackStatus'] == 'CREATE_IN_PROGRESS':
+            print("  ...")
+        elif response['Stacks'][0]['StackStatus'] == 'CREATE_FAILED':
+            print('Building stack %s failed. The mysterious AWS related reason is found in the AWS Console ...' % response['Stacks'][0]['StackName'])
+            sys.exit(1)
+        else:
+            print('Stack %s entered an unexpected state %s!' % (response['Stacks'][0]['StackName'], response['Stacks'][0]['StackStatus']) )
+            sys.exit(1)
+
 def get_buckets(OwnerArn=None):
     template_bucket = None
     function_bucket = None
+    api_bucket = None
     s3 = boto3.client('s3')
     region = s3._client_config.region_name
     bucket_response = s3.list_buckets()
@@ -43,7 +66,12 @@ def get_buckets(OwnerArn=None):
             bucket_region = bucket_region['LocationConstraint']
             if bucket_region == region or (bucket_region is None and region == "us-east-1"):
                 function_bucket = bucket['Name']
-    if None in [template_bucket, function_bucket]:
+        elif "spacecrabcodebucketstack-apicodebucket" in bucket['Name']:
+            bucket_region = s3.get_bucket_location(Bucket=bucket['Name'])
+            bucket_region = bucket_region['LocationConstraint']
+            if bucket_region == region or (bucket_region is None and region == "us-east-1"):
+                api_bucket = bucket['Name']
+    if None in [template_bucket, function_bucket, api_bucket]:
         # deploy the bucket stack
         print("We can't find the S3 bucket stack, redeploying...")
         with open('CloudFormationTemplates/bootstrap-code-buckets.template', 'r') as f:
@@ -60,21 +88,10 @@ def get_buckets(OwnerArn=None):
         else:
             response = cfn.create_stack(StackName='SpaceCrabCodeBucketStack',
                                         TemplateBody=bucket_template)
-        bucket_stack = response['StackId']
-
-        # wait for stack to deploy, hey
-        created = False
-        while not created:
-            time.sleep(3)
-            print("  ...")
-            response = cfn.describe_stacks(StackName=bucket_stack)
-            if response['Stacks'][0]['StackStatus'] == 'CREATE_COMPLETE':
-                created = True
-            elif response['Stacks'][0]['StackStatus'] == 'CREATE_FAILED':
-                print('Building stack "SpaceCrabCodeBucketStack" failed. idk, check it out in console.')
-                sys.exit()
+        # Hurry up an wait for CFN
+        wait_on_stack(response['StackId'])
         return get_buckets()
-    return (template_bucket, function_bucket)
+    return (template_bucket, function_bucket, api_bucket)
 
 
 def zip_directory(directory):
@@ -226,8 +243,7 @@ def get_email():
     print("OK, testing SES a bit.")
 
     ses = boto3.client('ses', region_name=region)
-    # if parameters['AlertEmailAddress'] != 'DONTUSE':
-    # ses = boto3.client('ses', region_name='us-east-1')
+
     try:
         domain = from_email.split('@')[-1]
         print("  Checking domain...")
@@ -372,8 +388,53 @@ def get_spacecrab_path():
     else:
         return get_spacecrab_path()
 
+def get_spacecrab_custom_fqdn():
+    custom_fqdn = {}
+    use_custom_domain = yesno('Would you like to use a custom FQDN for the SpaceCrab API ?', 'n')
+    if use_custom_domain:
+        print("NOTE: You need to configure your DNS CNAME record yourself after SpaceCrab deployment\n")
+        print("See https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html for more details\n\n")
+        domain = raw_input(
+            'Please enter a Fully Qualified Domain Name for your API gateway: '
+            )
+        fqdn = FQDN(domain)
+        if fqdn.is_valid:
+            a = yesno("\nWe'll use the domain \"%s\", is this ok?" % fqdn, 'y')
+            if a:
+                custom_fqdn['CustomFqdn'] = domain
+            else:
+                print("Domain name failed to validate, trying again \n")
+                return get_spacecrab_custom_fqdn()
+        print("NOTE: Your ACM ARN must already exist before SpaceCrab deployment otherwise CloudFormation WILL fail\n")
+        print("See https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains-prerequisites.html for more details\n\n")
+        acm_arn = raw_input(
+            'Please enter the ARN for your ACM certificate: '
+            )
+        try:
+            client = boto3.client('acm')
+            response = client.describe_certificate(
+                CertificateArn=acm_arn
+            )
 
-def upload_s3_contents(s3, cfn, template_bucket, function_bucket):
+            if response['Certificate']['Status'] == "ISSUED":
+                print("Validated certificate issued and available for domain %s" % response['Certificate']['DomainName'])
+            else:
+                print("Validated certificate %s exists, but has issues. Status is %s Investigate in the ACM console." % response['Certificate']['CertificateArn'], response['Certificate']['Status'])
+                sys.exit(1)
+            custom_fqdn['CustomFqdnAcmArn'] = response['Certificate']['CertificateArn']
+        except Exception as e:
+            print(e)
+            print("Something broke, try again .. \n")
+            return get_spacecrab_custom_fqdn()
+        return custom_fqdn
+    else:
+        # Return an emptry string because CloudFormation type validation ...
+        custom_fqdn['CustomFqdn'] =  ""
+        custom_fqdn['CustomFqdnAcmArn'] =  ""
+        return custom_fqdn
+
+
+def upload_s3_contents(s3, cfn, template_bucket, function_bucket, api_bucket):
     # upload cfn templates to template_bucket
     print("\nUploading CloudFormation templates.")
     for template in glob.glob('CloudFormationTemplates/*.template'):
@@ -394,6 +455,18 @@ def upload_s3_contents(s3, cfn, template_bucket, function_bucket):
         print("  Uploading %s" % zipf)
         s3.upload_file(zipf, function_bucket, zipf)
 
+    # upload swagger.json to API bucket
+    oas_filename = "api/swagger.json"
+    try:
+        with open(oas_filename, 'r') as f:
+            tags = json.load(f)
+    except json.JSONDecodeError as e:
+        print("JSON validation failed for %s at %s" % e.doc, e.pos)
+        sys.exit(1)
+    print("\nUploading %s " % oas_filename)
+    name = oas_filename.split('/')[-1]
+    s3.upload_file(oas_filename, api_bucket, name)
+
 
 def burndown(cfn):
     a = yesno("\nDo you really want to destroy the whole stack?", 'n')
@@ -402,11 +475,12 @@ def burndown(cfn):
     print("OK. We will keep the backups, etc, but we'll destroy what we can.\n")
     print("Deleting stack 'SpaceCrabStack'")
     cfn.delete_stack(StackName='SpaceCrabStack')
-    print("\nThis process can take some time, and sometimes fail.")
-    print("You might want to check in the console in half an hour to make sure it's gone.\n")
+    print("\nThis process takes significant time, and sometimes fails.")
+    print("You can check in the AWS console to make sure it's deleting.\n")
     print("Clearing out s3 buckets.")
     template_bucket = None
     function_bucket = None
+    api_bucket = None
     s3 = boto3.client('s3')
     region = s3._client_config.region_name
     bucket_response = s3.list_buckets()
@@ -421,10 +495,17 @@ def burndown(cfn):
             bucket_region = bucket_region['LocationConstraint']
             if bucket_region == region or (bucket_region is None and region == "us-east-1"):
                 function_bucket = bucket['Name']
+        elif "spacecrabcodebucketstack-apicodebucket" in bucket['Name']:
+            bucket_region = s3.get_bucket_location(Bucket=bucket['Name'])
+            bucket_region = bucket_region['LocationConstraint']
+            if bucket_region == region or (bucket_region is None and region == "us-east-1"):
+                api_bucket = bucket['Name']
     if function_bucket:
         delete_bucket(s3, function_bucket)
     if template_bucket:
         delete_bucket(s3, template_bucket)
+    if api_bucket:
+        delete_bucket(s3, api_bucket)
     r = cfn.delete_stack(StackName='SpaceCrabCodeBucketStack')
     print("\n\nOK, hopefully it's all gone now. Please check the console to confirm.")
     sys.exit(0)
@@ -464,6 +545,7 @@ def new_stack(cfn):
           )
     arn = get_permission_stuff()
     token_user_path = get_spacecrab_path()
+    custom_fqdn = get_spacecrab_custom_fqdn()
     PagerdutyApiToken = os.environ.get('PAGERDUTY_API_KEY', None)
     pagerdutytoken = get_pagerduty_token(PagerdutyApiToken)
     alertemail = get_email()
@@ -472,8 +554,13 @@ def new_stack(cfn):
     alertemail = alertemail['email']
 
     s3 = boto3.client('s3')
-    template_bucket, function_bucket = get_buckets(arn)
-    upload_s3_contents(s3, cfn, template_bucket, function_bucket)
+    template_bucket, function_bucket, api_bucket = get_buckets(arn)
+    try:
+        upload_s3_contents(s3, cfn, template_bucket, function_bucket, api_bucket)
+    except Exception as e:
+        print(e)
+        print("We had an error updating the stack." +
+              " If you can't resolve it, burn the stack down and redeploy.")
     chars = string.printable.translate(None, '"@/ \t\n\r\x0b\x0c')  # thanks amzn
     db_master_pass = ''.join(random.SystemRandom().choice(chars) for _ in range(128))
     db_user_pass = ''.join(random.SystemRandom().choice(chars) for _ in range(128))
@@ -490,20 +577,35 @@ def new_stack(cfn):
     parameters['IamTokenUserPath'] = token_user_path
     parameters['SESRegion'] = region
     parameters['OwnerArn'] = arn
-
+    parameters['CustomFqdn'] = custom_fqdn['CustomFqdn']
+    parameters['CustomFqdnAcmArn'] = custom_fqdn['CustomFqdnAcmArn']
     parameters = convert_parameters(parameters)
-    print("\nDeploying SpaceCrabStack, prepare to wait a long time.")
     # getting tags
     with open('tags.json', 'r') as f:
         tags = json.load(f)
+    print("\nDeploying space outside the crab ...")
+    try:
+        response = cfn.create_stack(StackName='SpaceCrabVpcStack',
+                         TemplateURL='https://s3.amazonaws.com/%s/bootstrap-networking.template'
+                                     % template_bucket,
+                         Capabilities=['CAPABILITY_IAM'],
+                         Tags=tags['tags'])
+        # VPC is required for deployment, ETA is usually 3-4 minutes.
+        # Hurry up an wait for CFN
+        wait_on_stack(response['StackId'])
+    except botocore.exceptions.ClientError as error_msg:
+        if 'AlreadyExistsException' in error_msg or 'already exists' in error_msg:
+            print("Using existing SpaceCrabVpcStack ...")
+            pass
+
+    print("\nDeploying space inside the crab, prepare to wait a long time ... ")
     cfn.create_stack(StackName='SpaceCrabStack',
                      TemplateURL='https://s3.amazonaws.com/%s/bootstrap.template'
                                  % template_bucket,
                      Parameters=parameters,
                      TimeoutInMinutes=60,
                      Capabilities=['CAPABILITY_IAM'],
-                     Tags=tags['tags']
-                     )
+                     Tags=tags['tags'])
 
 
 def update_stack(cfn):
@@ -513,12 +615,13 @@ def update_stack(cfn):
     if a:
         burndown(cfn)
     a = yesno('Would you like to update the stack?', 'y')
-    template_bucket, function_bucket = get_buckets()
+    template_bucket, function_bucket, api_bucket = get_buckets()
     if not a:
         print('\nOK, see you later!')
         sys.exit()
     print("\nOK, we'll ask a few questions.")
     # do "asking questions about parameters bits"
+    custom_fqdn = get_spacecrab_custom_fqdn()
     alertemail = update_get_email()
     from_email = alertemail['from_email']
     region = alertemail['region']
@@ -535,13 +638,20 @@ def update_stack(cfn):
         parameters['AlertEmailAddress'] = alertemail
         parameters['AlertFromAddress'] = from_email
         parameters['SESRegion'] = region
-
+    parameters['CustomFqdn'] = custom_fqdn['CustomFqdn']
+    parameters['CustomFqdnAcmArn'] = custom_fqdn['CustomFqdnAcmArn']
     parameters = convert_parameters(parameters)
+
     with open('tags.json', 'r') as f:
         tags = json.load(f)
 
     s3 = boto3.client('s3')
-    upload_s3_contents(s3, cfn, template_bucket, function_bucket)
+    try:
+        upload_s3_contents(s3, cfn, template_bucket, function_bucket, api_bucket)
+    except Exception as e:
+        print(e)
+        print("We had an error updating the stack." +
+              " If you can't resolve it, burn the stack down and redeploy.")
 
     print("Updating stack")
     try:
@@ -570,6 +680,8 @@ def update_stack(cfn):
         except Exception as e:
             print(e)
             print("This is probably ok, dwaboutit\n")
+    print("Finished pushing updates, check CloudFormation for progress.")
+    sys.exit(0)
 
 
 def main(argv):
@@ -585,4 +697,7 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    try:
+        main(sys.argv)
+    except KeyboardInterrupt:
+        print("\nHooroo!")
