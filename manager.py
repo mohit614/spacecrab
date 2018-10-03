@@ -373,9 +373,10 @@ def get_permission_stuff():
 def get_spacecrab_path():
     print("\nWe'll need a path, which will be part of the generated token's ARNs.")
     print("The path must start and end with /")
-    print("Consider *not* using /SpaceCrab/ or anything like it.\ni.e. make this something plausible if attackers read the path.")
+    print("Consider *not* using /SpaceCrab/ or anything like it.")
+    print("i.e. make this something plausible if attackers see the path.")
     path = raw_input(
-        'Please enter a "Path" for your users\: '
+        'Please enter a "Path" for your users: '
         ).strip()
     if len(path) == 0:
         path = get_spacecrab_path()
