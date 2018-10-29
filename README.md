@@ -13,7 +13,7 @@
      V  V      V  V
 ~~~
 
-Bootstraps an AWS account with everything you need to generate, mangage, and distribute and alert on AWS honey tokens. Made with breakfast roti by the Atlassian security team.
+Bootstraps an AWS account with everything you need to generate, manage, and distribute and alert on AWS honey tokens. Made with breakfast roti by the Atlassian security team.
 
 No added cyber.
 
