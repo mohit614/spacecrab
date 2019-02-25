@@ -17,11 +17,11 @@ Bootstraps an AWS account with everything you need to generate, manage, and dist
 
 No added cyber.
 
-AWS access keys are always a target for attakers and there's no way for them to determine a key is a honey token up front. The attacker attempt to use it on the Internet accessible, fully logged, AWS API.
+AWS access keys are always a target for attakers and there's no way for them to determine a key is a honey token up front. The attacker then attempts to use it on the Internet-accessible, fully logged, AWS API.
 
-It's trivial to create one access key and use it as a honey token but it quickly becames impossible to create hundreds or thousands and automatically expire them, report on them, and alert on them. The goodies in this repo make all of that easy and secure.
+It's trivial to create one access key and use it as a honey token, but it quickly becames impossible to create hundreds or thousands and automatically expire them, report on them, and alert on them. The goodies in this repo make all of that easy and secure.
 
-Configure your aws cli with root or admin access and run `python manager.py` to get started.
+Configure your AWS CLI with root or admin access and run `python manager.py` to get started.
 
 ## More Words ##
 
